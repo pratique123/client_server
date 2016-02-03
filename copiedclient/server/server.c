@@ -68,6 +68,7 @@ int main(int argc, char *argv[])
     struct sockaddr_in from;
     char buf[1024];
     struct packet *data1 = malloc(sizeof(struct packet));
+    memset(data1,0,sizeof(struct packet));
     if (argc < 2) {
         fprintf(stderr, "ERROR, port  or number of iteration not provided \n");
         exit(0);

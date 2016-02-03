@@ -38,6 +38,7 @@ int id_sort(struct send_time *a, struct send_time *b);
 void sort_by_milisecond();
 void sort_by_id();
 void print_roundtrip_time(size_t);
+void free_memory();
 void calculate_rtt();
 void print_receive_time();
 void error(const char *);
@@ -70,6 +71,9 @@ struct packet_info
 
 };
 struct packet_info sender;
+//struct send_time *s;
+//struct receive_time *r;
+//struct roundtrip_time *Rtt;
 
 struct packet
 {

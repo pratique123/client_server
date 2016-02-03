@@ -1,7 +1,5 @@
-//
-//  lado.c
+
 //  udpclientserver.c
-//
 //  Created by Prattique Timalsena on 04/11/15.
 //  Copyright © 2015 Prattique Timalsena. All rights reserved.
 //
@@ -25,6 +23,7 @@ void error(const char *msg)
     exit(0);
 }
 
+/*write packet id and timestamp(rtt) to the file */
 void write_packet_info(struct packet_info *sender)
 {
     // open file in appendmode checking either file exists or open new one to write
@@ -34,8 +33,7 @@ void write_packet_info(struct packet_info *sender)
         printf("\nCan't open file or file doesn't exist.");
         exit(0);
     }
-    //fwrite(receiver, sizeof(struct log_sender_receiving), 1, file);
-
+    
     fprintf(file1,"%zu\t%lld\t%lld\t", sender->id,sender->send_time,sender->rtt);
     fprintf(file1,"\n");
     fflush(stdin);
@@ -44,6 +42,7 @@ void write_packet_info(struct packet_info *sender)
     // write the structure  to the file;
 
 }
+/* prepare packet info to the structure */
 void create_packet_info(size_t id,long long microseconds1,long long rtt)
 {   struct packet_info *sender = malloc(sizeof( struct packet_info));
     sender->id = id;
@@ -54,11 +53,12 @@ void create_packet_info(size_t id,long long microseconds1,long long rtt)
 
 }
 
-
+/*sort by milisecond if needed currently not used */
 int milisecond_sort(struct send_time *a, struct send_time *b) {
     return (a->milisecond - b->milisecond);
 }
 
+/* sort by id */
 int id_sort(struct send_time *a, struct send_time *b) {
     return (a->id - b->id);
 }
@@ -71,8 +71,6 @@ void sort_by_id() {
     HASH_SORT(senders, id_sort);
 
 }
-
-
 void add_sender(size_t id, long long milisecond) {
     struct send_time *s;
 
@@ -138,15 +136,13 @@ void delete_all() {
 
 long long  print_senders(size_t sequence) {
     struct send_time *s;
-
+    long long milisecond;
     for(s=senders; s != NULL; s=(struct send_time*)(s->hh.next)) {
          if (s->id == sequence)
-          return(s->milisecond);
+           milisecond = s->milisecond;
     }
+return(milisecond);
 }
-
-
-
 void print_roundtrip_time(size_t sequence) {
     struct roundtrip_time *Rtt;
 
@@ -188,8 +184,6 @@ void calculate_rtt()
 }
 
 
-
-
 /** populates the structure with desired data to make a packet*/
 void fillup_buffer(struct packet *data, char *buffer){
     bzero(buffer,1024);
@@ -214,7 +208,7 @@ void  fillup_structure(struct packet *data, size_t size, size_t count)
 /*sets waiting time for select fuction*/
 void handle_timeval()
 {
-    tv.tv_sec = 12;
+    tv.tv_sec = 5;
     tv.tv_usec = 500000;
 
 }
@@ -228,7 +222,7 @@ int main(int argc, char *argv[])
     char buffer[1024];
     char buf[1024];
 
-    struct packet *data = malloc(sizeof(struct packet));
+   // struct packet *data = malloc(sizeof(struct packet));
 
     if (argc != 4)
     {
@@ -253,6 +247,8 @@ int main(int argc, char *argv[])
     while(1)
     {
         count++;
+        struct packet *data = malloc(sizeof(struct packet));
+        memset(data,0,sizeof(struct packet));
         bzero(buffer,1024);
         bzero(buf, 1024);
         /*call the function to populate the structure element*/
@@ -262,7 +258,9 @@ int main(int argc, char *argv[])
 
         /** copy the structure to the buffer which will be sent to server **/
         fillup_buffer(data,&buffer);
+       free(data);
         struct packet *data1 = malloc(sizeof(struct packet));
+	memset(data1,0,sizeof(struct packet));
         gettimeofday(&Tb, NULL); // get current time
         microseconds1 =  (Tb.tv_sec*1000000LL)+(Tb.tv_usec);
         copy_structure(&buffer, data1);
@@ -305,7 +303,7 @@ int main(int argc, char *argv[])
         else
         {
             /*check if the data available to read*/
-            n=FD_ISSET(sock, &rfds);
+           // n=FD_ISSET(sock, &rfds);
 
         if (FD_ISSET(sock, &rfds))
 
@@ -323,8 +321,6 @@ int main(int argc, char *argv[])
 
                 }
 
-                //write(1,"Got an ack: ",12);
-                // write(1,buf,n);
                 struct packet *data2 = malloc(sizeof(struct packet));
 
                 /* copy the buffer sent by server to the structure*/
@@ -340,10 +336,10 @@ int main(int argc, char *argv[])
                 bzero(buf, 1024);
                fflush(stdin);
                fflush(stdout);
-                       // printf(" seq =%zu \t size =%zu ", data2 -> seq,data2 -> size);
-               // printf("\tThe round trip time = %ld\n",Ts);
+                // printf(" seq =%zu \t size =%zu ", data2 -> seq,data2 -> size);
+                //printf("\tThe round trip time = %ld\n",Ts);
                 free (data2);// free structure used to receive
-               sleep(2);//sleep for 2s for easy sending and receiving
+                sleep(2);//sleep for 2s for easy sending and receiving
 
             }
 
@@ -352,7 +348,7 @@ int main(int argc, char *argv[])
         }
     }
     close(sock);
-    free(data);
+   // free(data);
     return 0;
 }
 
